@@ -1,0 +1,10 @@
+metric,value
+Datasets loaded,10
+Fund-master rows,40
+NAV-history rows,46000
+Unique fund houses,10
+Unique categories,2
+Unique sub-categories,12
+Unique risk categories,5
+Fund-master AMFI codes,40
+Missing AMFI codes,0

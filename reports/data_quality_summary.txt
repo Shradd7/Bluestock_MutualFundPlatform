@@ -1,0 +1,26 @@
+Day 1 data quality summary
+============================
+CSV files found: 16
+01_fund_master.csv: shape=(40, 15); anomalies=none detected
+02_nav_history.csv: shape=(46000, 3); anomalies=none detected
+03_aum_by_fund_house.csv: shape=(90, 5); anomalies=none detected
+04_monthly_sip_inflows.csv: shape=(48, 6); anomalies=missing values: yoy_growth_pct=12
+05_category_inflows.csv: shape=(144, 3); anomalies=none detected
+06_industry_folio_count.csv: shape=(21, 6); anomalies=none detected
+07_scheme_performance.csv: shape=(40, 19); anomalies=none detected
+08_investor_transactions.csv: shape=(32778, 13); anomalies=none detected
+09_portfolio_holdings.csv: shape=(322, 8); anomalies=none detected
+10_benchmark_indices.csv: shape=(8050, 3); anomalies=none detected
+nav_118632.csv: shape=(3335, 9); anomalies=missing values: isin_div_reinvestment=3335
+nav_119092.csv: shape=(3602, 9); anomalies=missing values: isin_div_reinvestment=3602
+nav_119551.csv: shape=(3273, 9); anomalies=none detected
+nav_120503.csv: shape=(3344, 9); anomalies=missing values: isin_div_reinvestment=3344
+nav_120841.csv: shape=(3338, 9); anomalies=missing values: isin_div_reinvestment=3338
+nav_125497.csv: shape=(3128, 9); anomalies=missing values: isin_div_reinvestment=3128
+fund_master file: 01_fund_master.csv
+unique fund houses (fund_house): ['Aditya Birla Sun Life MF', 'Axis Mutual Fund', 'DSP Mutual Fund', 'HDFC Mutual Fund', 'ICICI Prudential MF', 'Kotak Mahindra MF', 'Mirae Asset MF', 'Nippon India MF', 'SBI Mutual Fund', 'UTI Mutual Fund']
+unique categories (category): ['Debt', 'Equity']
+unique sub-categories (sub_category): ['ELSS', 'Flexi Cap', 'Gilt', 'Index', 'Index/ETF', 'Large & Mid Cap', 'Large Cap', 'Liquid', 'Mid Cap', 'Short Duration', 'Small Cap', 'Value']
+unique risk grades (risk_category): ['High', 'Low', 'Moderate', 'Moderately High', 'Very High']
+AMFI scheme code structure: numeric scheme identifiers; preserve as strings to avoid formatting loss.
+AMFI validation: 40 fund_master codes; 0 missing from nav_history; all codes present
