@@ -1,20 +1,148 @@
-# Mutual Fund Analytics — Day 1
+# Bluestock MF Analytics Platform
+
+A full-stack mutual fund analytics pipeline built as a 7-day capstone for Bluestock Fintech —
+ETL, a 6-table SQLite star schema, from-scratch performance/risk metrics, and an interactive
+dashboard, covering 40 real mutual fund schemes across 10 fund houses.
+
+**Full write-up:** [`reports/Final_Report.pdf`](reports/Final_Report.pdf)
+**Slides:** [`reports/Bluestock_MF_Presentation.pptx`](reports/Bluestock_MF_Presentation.pptx)
 
 ## Setup
 
-```powershell
-python -m pip install -r requirements.txt
+```bash
+git clone https://github.com/Shradd7/Bluestock_MutualFundPlatform.git
+cd Bluestock_MutualFundPlatform
+pip install -r requirements.txt
 ```
 
-Place the ten supplied CSV datasets in `data/raw/`, then run:
-
-```powershell
-python data_ingestion.py
-python live_nav_fetch.py
+Additional packages used by the notebooks and dashboard build (not all covered by
+`requirements.txt` — add these too):
+```bash
+pip install nbformat nbconvert ipykernel scipy
 ```
 
-`data_ingestion.py` prints each dataset's shape, dtypes, head, and basic anomalies. It also explores `fund_master.csv`, validates AMFI scheme codes against `nav_history.csv`, and writes `reports/data_quality_summary.txt`.
+## Running the ETL pipeline
 
-`live_nav_fetch.py` retrieves the six requested scheme histories from mfapi.in and saves them as raw CSV files under `data/raw/`.
+Runs data cleaning, database loading, and dashboard data prep in the correct order:
+```bash
+python run_pipeline.py
+```
+This produces:
+- `data/processed/clean_nav.csv`, `clean_transactions.csv`, `clean_performance.csv`
+- `data/db/bluestock_mf.db` (SQLite, 6-table star schema)
+- `dashboard/dashboard_data.json`
 
-AMFI scheme codes are identifiers rather than numerical measures; preserve them as strings so formatting or leading zeroes are not lost.
+Individual steps can also be run separately — see `run_pipeline.py` for the exact order and
+commands, or run `clean_nav.py`, `clean_transactions.py`, `clean_performance.py`,
+`load_to_sqlite.py`, and `build_dashboard_data.py` directly.
+
+## Running the analysis notebooks
+
+Each notebook is independently executable once the pipeline above has run:
+```bash
+jupyter nbconvert --to notebook --execute --inplace notebooks/EDA_Analysis.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebooks/Performance_Analytics.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebooks/Advanced_Analytics.ipynb
+```
+`Performance_Analytics.ipynb` produces `fund_scorecard.csv` and `alpha_beta.csv` (needed by
+the dashboard and by `recommender.py`) — run it before `Advanced_Analytics.ipynb`.
+
+`Advanced_Analytics.ipynb` produces `var_cvar_report.csv`, `rolling_sharpe_chart.png`,
+`cohort_analysis.csv`, `sip_continuity.csv`, and `sector_hhi.csv`.
+
+Chart PNGs from all three notebooks are written to `reports/charts/`.
+
+## Opening the dashboard
+
+Power BI Desktop was not available during development, so the dashboard is a standalone,
+self-contained **HTML/Plotly** file instead of a `.pbix`. It has all 4 required pages with
+working filters (verified via automated browser testing — see `reports/Final_Report.pdf`,
+Section 7).
+
+```bash
+cd dashboard
+python -m http.server 8000
+```
+Then open `http://localhost:8000/dashboard.html` in a browser. (Opening the file directly via
+`file://` won't work — it needs to be served over HTTP so the browser can fetch
+`dashboard_data.json`.)
+
+To regenerate `dashboard_data.json` after re-running the pipeline: `python build_dashboard_data.py`.
+
+## Recommender
+
+Standalone, runs independently once `fund_scorecard.csv` exists:
+```bash
+python recommender.py
+```
+
+## Dataset descriptions
+
+See [`reports/data_dictionary.md`](reports/data_dictionary.md) for full column-level
+documentation of every table in the database, plus the cleaning rules applied to each.
+
+| Dataset | Rows | Description |
+|---|---|---|
+| `01_fund_master.csv` | 40 | Fund metadata — AMFI code, house, category, expense ratio, risk grade |
+| `02_nav_history.csv` | 46,000 | Daily NAV, Jan 2022 – May 2026 |
+| `03_aum_by_fund_house.csv` | 90 | Quarterly AUM by fund house |
+| `04_monthly_sip_inflows.csv` | 48 | Monthly industry SIP inflow |
+| `05_category_inflows.csv` | 144 | Net inflow by fund category |
+| `06_industry_folio_count.csv` | 21 | Total MF folio count over time |
+| `07_scheme_performance.csv` | 40 | Pre-supplied reference metrics (metrics in this repo are recomputed independently — see report Section 5) |
+| `08_investor_transactions.csv` | ~32,000 | Synthetic investor SIP/Lumpsum/Redemption transactions |
+| `09_portfolio_holdings.csv` | ~320 | Equity fund holdings by sector/stock |
+| `10_benchmark_indices.csv` | ~8,000 | Daily Nifty 50/100/Midcap150, BSE SmallCap, CRISIL indices |
+
+## Known limitations
+
+Documented in full in `reports/Final_Report.pdf`, Section 8. In short:
+- Fund NAVs and the supplied benchmark indices show ~zero day-to-day correlation in this
+  dataset (R² ≈ 0.0006) — Alpha/Beta figures follow the required methodology but aren't real
+  market-risk signals.
+- The supplied Nifty 50 series doesn't track real market history over the dataset's window.
+- Transaction data starts 2024-01-01, not 2022 — cohort/demographic findings reflect
+  2024–2025 only.
+- 5-year CAGR is reported as `NaN` for all funds — NAV history only spans ~4.4 years.
+- Dashboard is HTML/Plotly, not `.pbix`, since Power BI Desktop wasn't available.
+
+## Repository structure
+
+```
+Bluestock_MutualFundPlatform/
+├── data/
+│   ├── raw/              ← original provided CSVs
+│   ├── processed/        ← cleaned CSVs (generated by run_pipeline.py)
+│   └── db/                ← bluestock_mf.db (generated, gitignored — see sql/schema.sql)
+├── notebooks/
+│   ├── EDA_Analysis.ipynb
+│   ├── Performance_Analytics.ipynb
+│   └── Advanced_Analytics.ipynb
+├── dashboard/
+│   ├── dashboard.html
+│   └── dashboard_data.json (generated)
+├── sql/
+│   ├── schema.sql
+│   └── queries.sql
+├── reports/
+│   ├── Final_Report.pdf
+│   ├── Bluestock_MF_Presentation.pptx
+│   ├── data_dictionary.md
+│   └── charts/
+├── clean_nav.py
+├── clean_transactions.py
+├── clean_performance.py
+├── load_to_sqlite.py
+├── build_dashboard_data.py
+├── run_pipeline.py
+├── recommender.py
+├── requirements.txt
+└── README.md
+```
+
+## Data authenticity note
+
+NAV values are anchored to real historical figures from mfapi.in and simulated forward with
+realistic return/volatility parameters. Investor transaction data is synthetically generated
+using real geographic and demographic distributions. This project is for educational purposes
+and does not constitute financial advice.
