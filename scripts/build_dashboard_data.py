@@ -7,8 +7,9 @@ import numpy as np
 import json
 from pathlib import Path
 
-DATA = Path("data")
-OUT = Path("dashboard/dashboard_data.json")
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA = BASE_DIR / "data"
+OUT = BASE_DIR / "dashboard/dashboard_data.json"
 
 nav = pd.read_csv(DATA / "processed/clean_nav.csv", parse_dates=["date"], dtype={"amfi_code": str})
 fund_master = pd.read_csv(DATA / "raw/01_fund_master.csv", dtype={"amfi_code": str})
@@ -21,7 +22,7 @@ folios = pd.read_csv(DATA / "raw/06_industry_folio_count.csv")
 folios["month"] = pd.to_datetime(folios["month"])
 tx = pd.read_csv(DATA / "processed/clean_transactions.csv", parse_dates=["transaction_date"], dtype={"amfi_code": str})
 bench = pd.read_csv(DATA / "raw/10_benchmark_indices.csv", parse_dates=["date"])
-scorecard = pd.read_csv("fund_scorecard.csv", dtype={"amfi_code": str})
+scorecard = pd.read_csv(BASE_DIR / "fund_scorecard.csv", dtype={"amfi_code": str})
 perf = pd.read_csv(DATA / "processed/clean_performance.csv", dtype={"amfi_code": str})
 
 nav = nav.merge(fund_master[["amfi_code", "scheme_name", "fund_house", "category", "plan"]], on="amfi_code")

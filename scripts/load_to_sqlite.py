@@ -3,8 +3,9 @@ import sqlite3
 import pandas as pd
 from pathlib import Path
 
-DB_PATH = Path("data/db/bluestock_mf.db")
-SCHEMA_PATH = Path("sql/schema.sql")
+BASE_DIR = Path(__file__).resolve().parents[1]
+DB_PATH = BASE_DIR / "data/db/bluestock_mf.db"
+SCHEMA_PATH = BASE_DIR / "sql/schema.sql"
 
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 DB_PATH.unlink(missing_ok=True)  # rebuild fresh each run
@@ -13,11 +14,11 @@ conn = sqlite3.connect(DB_PATH)
 conn.executescript(SCHEMA_PATH.read_text())
 
 # ---- dim_fund (from raw fund master) ----
-fund_master = pd.read_csv("data/raw/01_fund_master.csv", dtype={"amfi_code": str})
+fund_master = pd.read_csv(BASE_DIR / "data/raw/01_fund_master.csv", dtype={"amfi_code": str})
 fund_master.to_sql("dim_fund", conn, if_exists="append", index=False)
 
 # ---- dim_date (built from full nav date range) ----
-nav = pd.read_csv("data/processed/clean_nav.csv", dtype={"amfi_code": str}, parse_dates=["date"])
+nav = pd.read_csv(BASE_DIR / "data/processed/clean_nav.csv", dtype={"amfi_code": str}, parse_dates=["date"])
 dates = pd.DataFrame({"date": pd.date_range(nav["date"].min(), nav["date"].max())})
 dates["date_id"] = dates["date"].dt.strftime("%Y%m%d").astype(int)
 dates["year"] = dates["date"].dt.year
@@ -31,19 +32,19 @@ dates.to_sql("dim_date", conn, if_exists="append", index=False)
 nav.to_sql("fact_nav", conn, if_exists="append", index=False)
 
 # ---- fact_transactions ----
-tx = pd.read_csv("data/processed/clean_transactions.csv", dtype={"amfi_code": str, "investor_id": str})
+tx = pd.read_csv(BASE_DIR / "data/processed/clean_transactions.csv", dtype={"amfi_code": str, "investor_id": str})
 tx = tx.drop(columns=["amount_outlier_flag"], errors="ignore")  # optional QA column, not part of schema
 tx.to_sql("fact_transactions", conn, if_exists="append", index=False)
 
 # ---- fact_performance ----
-perf = pd.read_csv("data/processed/clean_performance.csv", dtype={"amfi_code": str})
+perf = pd.read_csv(BASE_DIR / "data/processed/clean_performance.csv", dtype={"amfi_code": str})
 perf = perf.drop(columns=["scheme_name", "fund_house", "category", "plan",
                            "expense_ratio_flag", "negative_sharpe_flag", "bad_drawdown_flag"],
                   errors="ignore")  # keep only fact_performance columns per schema
 perf.to_sql("fact_performance", conn, if_exists="append", index=False)
 
 # ---- fact_aum ----
-aum = pd.read_csv("data/raw/03_aum_by_fund_house.csv")
+aum = pd.read_csv(BASE_DIR / "data/raw/03_aum_by_fund_house.csv")
 aum.to_sql("fact_aum", conn, if_exists="append", index=False)
 
 # ---- verify row counts match source ----

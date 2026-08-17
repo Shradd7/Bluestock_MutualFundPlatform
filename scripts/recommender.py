@@ -5,7 +5,7 @@ Input: investor risk appetite (Low / Moderate / High)
 Output: top 3 funds by Sharpe ratio within the matching risk grade.
 
 Run directly for a demo across all three appetites:
-    python recommender.py
+    python scripts/recommender.py
 Or import and call recommend() from other code:
     from recommender import recommend
     recommend("High")
@@ -13,7 +13,7 @@ Or import and call recommend() from other code:
 import pandas as pd
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[1]
 
 # The dataset's actual risk_category has 5 SEBI-style levels, not 3.
 # Mapped down to Low / Moderate / High for a simple recommender — this

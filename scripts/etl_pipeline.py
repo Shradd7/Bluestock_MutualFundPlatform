@@ -7,26 +7,26 @@ Advanced Analytics) are run separately via nbconvert — see README.md —
 since they're exploratory/analytical rather than part of the ETL proper.
 
 Run from the repo root:
-    python run_pipeline.py
+    python scripts/etl_pipeline.py
 """
 import subprocess
 import sys
 from pathlib import Path
 
 STEPS = [
-    ("Cleaning NAV history",        ["python", "clean_nav.py"]),
-    ("Cleaning investor transactions", ["python", "clean_transactions.py"]),
-    ("Cleaning scheme performance",  ["python", "clean_performance.py"]),
-    ("Loading cleaned data into SQLite", ["python", "load_to_sqlite.py"]),
-    ("Rebuilding dashboard data",    ["python", "build_dashboard_data.py"]),
+    ("Cleaning NAV history",        ["clean_nav.py"]),
+    ("Cleaning investor transactions", ["clean_transactions.py"]),
+    ("Cleaning scheme performance",  ["clean_performance.py"]),
+    ("Loading cleaned data into SQLite", ["load_to_sqlite.py"]),
+    ("Rebuilding dashboard data",    ["build_dashboard_data.py"]),
 ]
 
 
 def main():
-    repo_root = Path(__file__).resolve().parent
+    repo_root = Path(__file__).resolve().parents[1]
     for label, cmd in STEPS:
         print(f"\n{'='*60}\n{label}\n{'='*60}")
-        result = subprocess.run(cmd, cwd=repo_root)
+        result = subprocess.run([sys.executable, str(repo_root / "scripts" / cmd[0])], cwd=repo_root)
         if result.returncode != 0:
             print(f"\nPipeline stopped: '{label}' failed (exit code {result.returncode}).")
             sys.exit(result.returncode)

@@ -2,8 +2,9 @@
 import pandas as pd
 from pathlib import Path
 
-RAW = Path("data/raw/07_scheme_performance.csv")
-OUT = Path("data/processed/clean_performance.csv")
+BASE_DIR = Path(__file__).resolve().parents[1]
+RAW = BASE_DIR / "data/raw/07_scheme_performance.csv"
+OUT = BASE_DIR / "data/processed/clean_performance.csv"
 
 NUMERIC_COLS = [
     "return_1yr_pct", "return_3yr_pct", "return_5yr_pct", "benchmark_3yr_pct",

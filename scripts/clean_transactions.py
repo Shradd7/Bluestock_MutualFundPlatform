@@ -2,8 +2,9 @@
 import pandas as pd
 from pathlib import Path
 
-RAW = Path("data/raw/08_investor_transactions.csv")
-OUT = Path("data/processed/clean_transactions.csv")
+BASE_DIR = Path(__file__).resolve().parents[1]
+RAW = BASE_DIR / "data/raw/08_investor_transactions.csv"
+OUT = BASE_DIR / "data/processed/clean_transactions.csv"
 
 VALID_TYPES = {"sip": "SIP", "lumpsum": "Lumpsum", "lump sum": "Lumpsum", "redemption": "Redemption"}
 VALID_KYC = {"verified": "Verified", "pending": "Pending"}

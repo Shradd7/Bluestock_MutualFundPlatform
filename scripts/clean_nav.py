@@ -2,8 +2,9 @@
 import pandas as pd
 from pathlib import Path
 
-RAW = Path("data/raw/02_nav_history.csv")
-OUT = Path("data/processed/clean_nav.csv")
+BASE_DIR = Path(__file__).resolve().parents[1]
+RAW = BASE_DIR / "data/raw/02_nav_history.csv"
+OUT = BASE_DIR / "data/processed/clean_nav.csv"
 
 df = pd.read_csv(RAW, dtype={"amfi_code": str})
 n0 = len(df)
